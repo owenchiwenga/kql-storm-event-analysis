@@ -1,0 +1,46 @@
+
+//
+// Project 3: Storm Event Data Analysis and Anomaly Detection
+// Platform: Azure Data Explorer
+// Dataset: StormEvents
+//
+
+// Query 1: Inspect sample records
+StormEvents
+| take 10
+
+// Query 2: Count events by state
+StormEvents
+| summarize TotalEvents = count() by State
+| order by TotalEvents desc
+| take 10
+
+// Query 3: Count events by event type
+StormEvents
+| summarize TotalEvents = count() by EventType
+| order by TotalEvents desc
+| take 10
+
+// Query 4: Aggregate reported property and crop damage
+StormEvents
+| summarize
+    TotalPropertyDamage = sum(DamageProperty),
+    TotalCropDamage = sum(DamageCrops)
+    by EventType
+| order by TotalPropertyDamage desc
+| take 10
+
+// Query 5: Calculate the average event count per state
+StormEvents
+| summarize TotalEvents = count() by State
+| summarize AverageEvents = avg(TotalEvents)
+
+// Query 6: Identify states with more than twice the average
+let StateCounts =
+    StormEvents
+    | summarize TotalEvents = count() by State;
+let AverageEvents =
+    toscalar(StateCounts | summarize avg(TotalEvents));
+StateCounts
+| where TotalEvents > AverageEvents * 2
+| order by TotalEvents desc
